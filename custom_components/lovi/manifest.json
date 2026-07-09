@@ -18,5 +18,8 @@
         "tinytuya==1.20.0",
         "tuya-device-sharing-sdk~=0.2.4"
     ],
+    "icons": {
+        "lovi": "icons.json"
+    },
     "version": "1.0.0"
 }
