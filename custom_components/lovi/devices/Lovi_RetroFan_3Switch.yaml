@@ -1,0 +1,80 @@
+name: Lovi 3+1 Retrofit module
+products:
+  - id: x7fwe0qoznyjel8i
+
+entities:
+  # --- THE CEILING FAN ---
+  - entity: fan
+    name: Fan 1
+    dps:
+      - id: 142
+        type: boolean
+        name: switch
+        optional: true
+      - id: 141
+        type: integer
+        name: speed
+        optional: true
+        range:
+          min: 1
+          max: 5
+
+  # --- SWITCHES (LIGHTS & SOCKETS) ---
+  - entity: switch
+    name: Tubelight
+    dps:
+      - id: 1
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: switch
+    name: Socket
+    dps:
+      - id: 2
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: switch
+    name: Zero Bulb
+    dps:
+      - id: 3
+        type: boolean
+        name: switch
+        optional: true
+
+  # --- SYSTEM CONFIGURATIONS ---
+  - entity: switch
+    name: Master Switch
+    category: config
+    icon: mdi:power-settings
+    dps:
+      - id: 13
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: switch
+    name: Backlight
+    category: config
+    icon: mdi:brightness-6
+    dps:
+      - id: 16
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: number
+    name: Fan Timer
+    category: config
+    icon: mdi:timer-outline
+    dps:
+      - id: 143
+        type: integer
+        name: value
+        optional: true
+        unit: min
+        range:
+          min: 0
+          max: 1440

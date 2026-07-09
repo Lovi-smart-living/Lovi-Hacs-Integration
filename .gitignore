@@ -1,0 +1,5 @@
+tuya-local/
+__pycache__/
+._*
+.DS_Store
+*.pyc

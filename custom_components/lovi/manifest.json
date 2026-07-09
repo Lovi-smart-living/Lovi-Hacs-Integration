@@ -1,0 +1,22 @@
+{
+    "domain": "lovi",
+    "name": "Lovi",
+    "codeowners": [
+        "@lovi"
+    ],
+    "config_flow": true,
+    "dependencies": [],
+    "documentation": "https://lovi.tech",
+    "integration_type": "device",
+    "iot_class": "local_push",
+    "issue_tracker": "https://lovi.tech/issues",
+    "loggers": [
+        "lovi",
+        "tinytuya"
+    ],
+    "requirements": [
+        "tinytuya==1.20.0",
+        "tuya-device-sharing-sdk~=0.2.4"
+    ],
+    "version": "1.0.0"
+}
