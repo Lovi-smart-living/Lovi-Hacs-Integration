@@ -1,0 +1,93 @@
+blueprint:
+  name: Knob Cob control
+  description: Direct MQTT stepping for maximum responsiveness and range based on your permanent solution.
+  domain: automation
+  input:
+    knob_topic:
+      name: Knob Action Topic
+      description: "The MQTT topic for your knob's actions (e.g., zigbee2mqtt/knob/action)"
+      default: "zigbee2mqtt/knob/action"
+      selector:
+        text: {}
+    light_name:
+      name: Target Light or Group Name
+      description: "The exact name of your light or group in Zigbee2MQTT (e.g., 'Cob' or 'Office lights'). The blueprint will automatically format this as zigbee2mqtt/{NAME}/set"
+      default: "Cob"
+      selector:
+        text: {}
+
+mode: queued
+max: 50
+
+trigger:
+  - id: toggle
+    trigger: mqtt
+    topic: !input knob_topic
+    payload: toggle
+  - id: bright_up
+    trigger: mqtt
+    topic: !input knob_topic
+    payload: brightness_step_up
+  - id: bright_down
+    trigger: mqtt
+    topic: !input knob_topic
+    payload: brightness_step_down
+  - id: temp_up
+    trigger: mqtt
+    topic: !input knob_topic
+    payload: color_temperature_step_up
+  - id: temp_down
+    trigger: mqtt
+    topic: !input knob_topic
+    payload: color_temperature_step_down
+
+variables:
+  target_name: !input light_name
+  target_topic: "zigbee2mqtt/{{ target_name }}/set"
+
+action:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: toggle
+        sequence:
+          - action: mqtt.publish
+            data:
+              topic: "{{ target_topic }}"
+              payload: '{"state": "TOGGLE", "transition": 3}'
+
+      - conditions:
+          - condition: trigger
+            id: bright_up
+        sequence:
+          - action: mqtt.publish
+            data:
+              topic: "{{ target_topic }}"
+              payload: '{"brightness_step": 51, "transition": 3}'
+
+      - conditions:
+          - condition: trigger
+            id: bright_down
+        sequence:
+          - action: mqtt.publish
+            data:
+              topic: "{{ target_topic }}"
+              payload: '{"brightness_step": -51, "transition": 3}'
+
+      - conditions:
+          - condition: trigger
+            id: temp_up
+        sequence:
+          - action: mqtt.publish
+            data:
+              topic: "{{ target_topic }}"
+              payload: '{"color_temp_step": 70, "transition": 3}'
+
+      - conditions:
+          - condition: trigger
+            id: temp_down
+        sequence:
+          - action: mqtt.publish
+            data:
+              topic: "{{ target_topic }}"
+              payload: '{"color_temp_step": -70, "transition": 3}'
