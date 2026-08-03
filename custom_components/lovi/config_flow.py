@@ -43,6 +43,7 @@ from .helpers.config import get_device_id
 from .helpers.device_config import get_config
 from .helpers.log import log_json
 from .lovi_cloud import LoviCloud
+from .lovi_sightings import get_or_create_watcher
 
 _LOGGER = logging.getLogger(__name__)
 DEVICE_DETAILS_URL = (
@@ -288,6 +289,9 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                 return self.async_abort(reason="no_device_selected")
 
             self.__cloud_device = device_info
+            if not device_info.get("online"):
+                _LOGGER.info("[CONFIG_FLOW] Device is offline, using wake-to-discover step")
+                return await self.async_step_wake()
             if device_info.get("ip"):
                 self.__cloud_device["ip"] = ""
             return await self.async_step_search()
@@ -296,17 +300,18 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         for key, info in self.__cloud_devices.items():
             if info.get("exists"):
                 continue
-            if not info.get("online"):
-                continue
             if info.get(CONF_LOCAL_KEY):
+                label = f"{info['name']} ({info['product_name']})"
+                if not info.get("online"):
+                    label = f"{label} (OFFLINE — wake to discover)"
                 unconfigured.append(
                     SelectOptionDict(
                         value=key,
-                        label=f"{info['name']} ({info['product_name']})",
+                        label=label,
                     )
                 )
 
-        _LOGGER.info("[CONFIG_FLOW] Found %d unconfigured online devices", len(unconfigured))
+        _LOGGER.info("[CONFIG_FLOW] Found %d unconfigured devices", len(unconfigured))
         if not unconfigured:
             _LOGGER.info("[CONFIG_FLOW] No unconfigured devices found")
             return self.async_abort(reason="no_devices")
@@ -323,6 +328,50 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                     )
                 }
             ),
+        )
+
+    async def async_step_wake(self, user_input=None):
+        """Wait for a sleeping battery device to wake and be sighted.
+
+        Battery powered devices (smart locks, sensors) only appear on the
+        network for a few seconds after they are physically triggered.  This
+        step starts the passive watcher and waits for a sighting while the
+        user wakes the device.
+        """
+        _LOGGER.info("[CONFIG_FLOW] async_step_wake called")
+        dev_id = ""
+        if self.__cloud_device:
+            dev_id = self.__cloud_device.get("id", "") or ""
+        errors = {}
+        placeholders = {"device_name": self._device_name_placeholder}
+
+        watcher = get_or_create_watcher(self.hass)
+        if watcher is not None:
+            try:
+                await watcher.async_start()
+            except Exception as e:
+                _LOGGER.error("[CONFIG_FLOW] Failed to start watcher: %s", e)
+
+        if user_input is not None:
+            if watcher is not None and dev_id:
+                sighting = await watcher.async_wait_for_sighting(dev_id, timeout=25)
+                if sighting and sighting.get("ip"):
+                    _LOGGER.info(
+                        "[CONFIG_FLOW] Woke device %s at %s",
+                        dev_id,
+                        sighting.get("ip"),
+                    )
+                    self.__cloud_device["ip"] = sighting.get("ip")
+                    if sighting.get("version"):
+                        self.__cloud_device["version"] = sighting.get("version")
+                    return await self.async_step_local()
+            errors["base"] = "device_not_seen"
+
+        return self.async_show_form(
+            step_id="wake",
+            data_schema=vol.Schema({}),
+            description_placeholders=placeholders,
+            errors=errors,
         )
 
     async def async_step_choose_device(self, user_input=None):
@@ -450,6 +499,8 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                     self.__cloud_device["local_product_id"] = local_device.get("productKey")
             else:
                 _LOGGER.warning("[CONFIG_FLOW] Could not find device %s on network", dev_id)
+                if self.__cloud_device and self.__cloud_device.get("id"):
+                    return await self.async_step_wake()
             return await self.async_step_local()
 
         return self.async_show_form(
@@ -496,6 +547,10 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             except Exception as e:
                 _LOGGER.error("[CONFIG_FLOW] Connection test threw exception: %s", e, exc_info=True)
                 self.device = None
+            if not self.device:
+                # The device may be asleep (battery powered) but woke during
+                # the test.  Adopt a fresh sighting IP and retry once.
+                self.device = await self._retry_with_sighting(user_input)
             if self.device:
                 self.data = user_input
                 self._auto_detected_protocol = None
@@ -555,6 +610,43 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             },
             errors=errors,
         )
+
+    async def _retry_with_sighting(self, user_input):
+        """Retry a failed connection using a sighted IP from the watcher.
+
+        Battery powered devices only respond while awake.  If the watcher has
+        recently seen this device, point the connection at the sighted IP (and
+        version) and retry once.
+        """
+        watcher = get_or_create_watcher(self.hass)
+        if watcher is None:
+            return None
+        dev_id = user_input.get(CONF_DEVICE_ID)
+        if not dev_id:
+            return None
+        sighting = watcher.async_get_sighting(dev_id)
+        if sighting is None:
+            sighting = watcher.async_get_by_uuid(dev_id)
+        if not sighting or not sighting.get("ip"):
+            return None
+        if sighting["ip"] == user_input.get(CONF_HOST):
+            return None
+        retry = {**user_input, CONF_HOST: sighting["ip"]}
+        if sighting.get("version") and str(user_input.get(CONF_PROTOCOL_VERSION)) != str(sighting["version"]):
+            retry[CONF_PROTOCOL_VERSION] = sighting["version"]
+        _LOGGER.info(
+            "[CONFIG_FLOW] Retrying %s with sighted IP %s",
+            dev_id,
+            sighting["ip"],
+        )
+        try:
+            device = await async_test_connection(retry, self.hass)
+        except Exception as e:
+            _LOGGER.debug("[CONFIG_FLOW] Sighting retry failed: %s", e)
+            return None
+        if device:
+            user_input.update(retry)
+        return device
 
     async def async_step_select_type(self, user_input=None):
         _LOGGER.info("[CONFIG_FLOW] async_step_select_type called, user_input=%s", user_input)

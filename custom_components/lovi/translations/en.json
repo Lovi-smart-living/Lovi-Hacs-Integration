@@ -32,6 +32,10 @@
                 "title": "Locate the device IP address",
                 "description": "{device_name}Tuya cloud does not provide local IP addresses so we must now search your local network to find the device. This takes up to 20 seconds.\n\nIf unsuccessful you will need to provide the IP address yourself some other way such as from router DHCP assignment.\n\nFor this step and the following device addition to succeed you must shut down the mobile app or its connections to the device will often block Tuya Local communication with them."
             },
+            "wake": {
+                "title": "Wake the device to find it",
+                "description": "{device_name}Battery powered devices (smart locks, sensors) sleep and are only visible on the network for a few seconds after they are used.\n\n**Now physically use the device** — touch the keypad, open the door, or press the button — then continue.\n\nThe integration is listening and will pick up its address automatically."
+            },
             "local": {
                 "title": "Configure your Tuya Local device",
                 "description": "{device_name}[Follow these instructions to find your device id and local key.]({device_details_url})",
@@ -76,7 +80,8 @@
             "connection": "Unable to connect to your device with those details. It could be an intermittent issue, or they may be incorrect. If you selected a specific protocol version, try 'auto' instead.",
             "does_not_need_hub": "Device does not need a gateway and one was selected. Please review your choices.",
             "needs_hub": "Device needs a gateway and none was selected.",
-            "login_error": "Failed to authenticate with the Tuya cloud. Please check your user code and try again."
+            "login_error": "Failed to authenticate with the Tuya cloud. Please check your user code and try again.",
+            "device_not_seen": "The device was not seen on the network during the wait. Make sure you are near the device, physically use it (e.g. touch the keypad or open the door), and try again."
         }
     },
     "selector": {

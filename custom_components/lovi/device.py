@@ -29,6 +29,7 @@ from .const import (
 from .helpers.config import get_device_id
 from .helpers.device_config import possible_matches
 from .helpers.log import log_json
+from .lovi_sightings import get_or_create_watcher
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -145,6 +146,7 @@ class TuyaLocalDevice:
         self._next_persistent_retry = 0.0
         self._PERSISTENT_FAILURE_THRESHOLD = 3
         self._PERSISTENT_RETRY_INTERVAL = 21600
+        self._last_sighting_consult = 0.0
 
     def set_health_monitor(self, health_monitor):
         self._health_monitor = health_monitor
@@ -534,6 +536,11 @@ class TuyaLocalDevice:
                             self._device_id
                         )
                     )
+                if not self.has_returned_state:
+                    try:
+                        await self.async_consult_sightings()
+                    except Exception:
+                        pass
             finally:
                 if self._api_lock.locked():
                     self._api_lock.release()
@@ -620,6 +627,8 @@ class TuyaLocalDevice:
                     lambda: self._refresh_cached_state(),
                     f"Failed to refresh device state for {self.name} after IP update.",
                 )
+        if not self.has_returned_state:
+            await self.async_consult_sightings()
 
     async def _discover_device_ip(self) -> str | None:
         try:
@@ -635,6 +644,42 @@ class TuyaLocalDevice:
         except Exception as e:
             _LOGGER.debug("%s LAN discovery failed: %s", self.name, e)
         return None
+
+    async def async_consult_sightings(self) -> bool:
+        """Adopt a fresh sighting IP for this device.
+
+        Battery powered devices only broadcast their IP while awake.  If the
+        watcher has recently seen this device at an IP we are not using, point
+        the connection at that IP and refresh immediately, while the device is
+        still awake.
+        """
+        now = time()
+        if now - self._last_sighting_consult < 30:
+            return False
+        self._last_sighting_consult = now
+        watcher = get_or_create_watcher(self._hass)
+        if watcher is None:
+            return False
+        sighting = watcher.async_get_sighting(self._device_id)
+        if sighting is None and self.dev_cid:
+            sighting = watcher.async_get_by_uuid(self.dev_cid)
+        if not sighting:
+            return False
+        ip = sighting.get("ip")
+        if not ip or ip == self._address:
+            return False
+        _LOGGER.info(
+            "%s adopting sighted IP %s (last seen %s)",
+            self.name,
+            ip,
+            sighting.get("last_seen"),
+        )
+        await self.async_update_address(ip)
+        await self._retry_on_failed_connection(
+            lambda: self._refresh_cached_state(),
+            f"Failed to refresh device state for {self.name} after sighting.",
+        )
+        return self.has_returned_state
 
     def get_property(self, dps_id):
         cached_state = self._get_cached_state()

@@ -6,6 +6,7 @@ from homeassistant.core import HomeAssistant
 from .const import DOMAIN
 from .device_health import DeviceHealthMonitor
 from .lovi_cloud import LoviCloud
+from .lovi_sightings import get_or_create_watcher
 from .token_manager import TokenManager
 
 _LOGGER = logging.getLogger(__name__)
@@ -17,6 +18,7 @@ class LoviCoordinator:
         self.cloud = LoviCloud(hass)
         self.token_manager = TokenManager(hass, self.cloud)
         self.health_monitor = DeviceHealthMonitor(hass, self.cloud)
+        self.sightings = None
         self._started = False
 
     async def async_setup(self):
@@ -32,6 +34,14 @@ class LoviCoordinator:
         self._hass.data[DOMAIN]["cloud"] = self.cloud
 
         try:
+            self.sightings = get_or_create_watcher(self._hass)
+            if self.sightings:
+                await self.sightings.async_start()
+        except Exception as e:
+            _LOGGER.error("Failed to start sightings watcher: %s", e)
+        self._hass.data[DOMAIN]["sightings"] = self.sightings
+
+        try:
             await self.token_manager.async_start()
         except Exception as e:
             _LOGGER.error("Failed to start token manager: %s", e)
@@ -43,14 +53,20 @@ class LoviCoordinator:
 
         self._started = True
         _LOGGER.info(
-            "[COORDINATOR] Setup complete (auth=%s, token_manager=%s, health_monitor=%s)",
+            "[COORDINATOR] Setup complete (auth=%s, token_manager=%s, health_monitor=%s, sightings=%s)",
             self.cloud.is_authenticated,
             self.token_manager._running,
             self.health_monitor._running,
+            self.sightings.is_running if self.sightings else False,
         )
 
     async def async_cleanup(self):
         _LOGGER.info("[COORDINATOR] Cleaning up Lovi coordinator")
+        try:
+            if self.sightings:
+                await self.sightings.async_stop()
+        except Exception as e:
+            _LOGGER.error("Error stopping sightings watcher: %s", e)
         try:
             await self.token_manager.async_stop()
         except Exception as e:
