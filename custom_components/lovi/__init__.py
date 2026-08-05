@@ -57,20 +57,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         _LOGGER.info("[INIT] Existing coordinator found, cloud auth=%s", coordinator.cloud.is_authenticated)
 
     config = {**entry.data, **entry.options, "name": entry.title}
-    try:
-        device = await hass.async_add_executor_job(setup_device, hass, config)
-        await device.async_refresh()
-    except Exception as e:
-        _cleanup_failed_device(hass, device_id)
-        raise ConfigEntryNotReady("lovi device not ready") from e
-
-    if not device.has_returned_state:
-        _cleanup_failed_device(hass, device_id)
-        raise ConfigEntryNotReady("lovi device offline")
-
-    if coordinator.health_monitor and coordinator.health_monitor._running:
-        device.set_health_monitor(coordinator.health_monitor)
-
     device_conf = await hass.async_add_executor_job(
         get_config,
         entry.data[CONF_TYPE],
@@ -78,6 +64,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     if device_conf is None:
         _LOGGER.error(NOT_FOUND, config[CONF_TYPE])
         return False
+
+    try:
+        device = await hass.async_add_executor_job(setup_device, hass, config)
+        await device.async_refresh()
+    except Exception as e:
+        _cleanup_failed_device(hass, device_id)
+        raise ConfigEntryNotReady("lovi device not ready") from e
+
+    if not device.has_returned_state and device_conf.requires_state:
+        _cleanup_failed_device(hass, device_id)
+        raise ConfigEntryNotReady("lovi device offline")
+
+    if coordinator.health_monitor and coordinator.health_monitor._running:
+        device.set_health_monitor(coordinator.health_monitor)
 
     entities = set()
     for e in device_conf.all_entities():

@@ -130,6 +130,21 @@ class TuyaDeviceConfig:
         """Return the legacy conf_type associated with this device."""
         return self._config.get("legacy_type", self.config_type)
 
+    @property
+    def requires_state(self):
+        """Return True if any entity DP requires the device to report state.
+
+        Configs where every DP is optional (e.g. IR remote / IR blaster
+        templates) can operate without ever receiving local DP status and
+        should therefore be allowed through setup even when
+        ``device.has_returned_state`` is False.
+        """
+        for e in self.all_entities():
+            for d in e.dps():
+                if not d.optional:
+                    return True
+        return False
+
     def all_entities(self):
         """Iterate through all entities for this device."""
         entities = self._config.get("entities")
@@ -368,11 +383,19 @@ class TuyaEntityConfig:
         return None
 
     def available(self, device):
-        """Return whether this entity should be available, with state as given."""
+        """Return whether this entity should be available, with state as given.
+
+        When the device has never reported state, availability is still
+        True for configs that don't require state (all-optional DPs, such
+        as IR remote / blaster templates).  For state-requiring configs
+        the device must have returned state at least once.
+        """
+        if not device.has_returned_state:
+            return not self._device.requires_state
         avail_dp = self.find_dps("available")
-        if avail_dp and device.has_returned_state:
+        if avail_dp:
             return avail_dp.get_value(device)
-        return device.has_returned_state
+        return True
 
     def enabled_by_default(self, device):
         """Return whether this entity should be disabled by default."""
