@@ -844,6 +844,7 @@ async def async_test_connection(config: dict, hass: HomeAssistant):
 
     if config.get(CONF_PROTOCOL_VERSION) == "auto":
         _LOGGER.info("[TEST_CONNECTION] Auto protocol mode, testing all versions")
+        fallback_device = None
         for proto in API_PROTOCOL_VERSIONS:
             proto_config = {**config, CONF_PROTOCOL_VERSION: proto}
             device = None
@@ -857,6 +858,7 @@ async def async_test_connection(config: dict, hass: HomeAssistant):
                     _LOGGER.info("[TEST_CONNECTION] Connected with protocol version %s", proto)
                     break
                 else:
+                    fallback_device = device
                     _LOGGER.debug("[TEST_CONNECTION] Protocol %s: device created but no state returned", proto)
             except Exception as e:
                 _LOGGER.debug("[TEST_CONNECTION] Protocol %s test failed: %s %s", proto, type(e).__name__, e)
@@ -864,6 +866,9 @@ async def async_test_connection(config: dict, hass: HomeAssistant):
                 device._api.set_socketPersistent(False)
                 if device._api.parent:
                     device._api.parent.set_socketPersistent(False)
+        if retval is None and fallback_device is not None:
+            _LOGGER.info("[TEST_CONNECTION] No protocol returned state, accepting device that connected (e.g. IR hub)")
+            retval = fallback_device
     else:
         try:
             _LOGGER.info("[TEST_CONNECTION] Testing with protocol version %s", config.get(CONF_PROTOCOL_VERSION))
@@ -873,8 +878,12 @@ async def async_test_connection(config: dict, hass: HomeAssistant):
                 config,
             )
             await device.async_refresh()
-            retval = device if device.has_returned_state else None
-            _LOGGER.info("[TEST_CONNECTION] Test result: %s", "connected" if retval else "no response")
+            if device.has_returned_state:
+                retval = device
+                _LOGGER.info("[TEST_CONNECTION] Test result: connected")
+            else:
+                retval = device
+                _LOGGER.info("[TEST_CONNECTION] Test result: connected but no state (e.g. IR hub)")
         except Exception as e:
             _LOGGER.warning("[TEST_CONNECTION] Test failed: %s %s", type(e).__name__, e)
 
