@@ -8,6 +8,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.event import async_track_time_interval
 
 from .const import (
+    CONF_HEALTH_MONITOR_ENABLED,
     CONF_PROTOCOL_VERSION,
     DEVICE_UNAVAILABLE_TIMEOUT,
     DOMAIN,
@@ -25,7 +26,16 @@ class DeviceHealthMonitor:
         self._remove_periodic = None
         self._running = False
 
-    async def async_start(self, check_interval: int = DEFAULT_HEALTH_CHECK_INTERVAL):
+    async def async_start(
+        self,
+        check_interval: int = DEFAULT_HEALTH_CHECK_INTERVAL,
+        enabled: bool = True,
+    ):
+        if not enabled:
+            _LOGGER.debug("Health monitor disabled by configuration")
+            self._running = False
+            self._remove_periodic = None
+            return
         self._running = True
         self._remove_periodic = async_track_time_interval(
             self._hass,
@@ -36,6 +46,10 @@ class DeviceHealthMonitor:
             "Device health monitor started (check interval: %ds)",
             check_interval,
         )
+
+    async def async_apply_settings(self, enabled: bool, interval: int):
+        await self.async_stop()
+        await self.async_start(interval, enabled=enabled)
 
     async def async_stop(self):
         self._running = False
@@ -95,6 +109,8 @@ class DeviceHealthMonitor:
             return None
 
     async def async_on_device_disconnect(self, device_id: str) -> dict[str, Any] | None:
+        if not self._running:
+            return None
         _LOGGER.info("Device %s disconnected, checking cloud for updates", device_id)
 
         result = await self.async_check_device(device_id)

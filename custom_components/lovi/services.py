@@ -29,7 +29,11 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_services(hass: HomeAssistant, entities: list[str]):
     """Set up services for the Tuya Local integration."""
-    if "remote" in entities:
+    if "remote" not in entities:
+        return True
+    if hass.services.has_service(DOMAIN, "send_learned_ir_command"):
+        return True
+    try:
         service.async_register_platform_entity_service(
             hass,
             DOMAIN,
@@ -38,6 +42,8 @@ async def async_setup_services(hass: HomeAssistant, entities: list[str]):
             schema=REMOTE_SEND_IR_COMMAND_SCHEMA,
             func=async_handle_send_ir_command,
         )
+    except Exception as e:
+        _LOGGER.error("Failed to register %s service: %s", DOMAIN, e)
     return True
 
 

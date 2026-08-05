@@ -2,7 +2,7 @@
     "name": "Lovi",
     "render_readme": true,
     "iot_class": "local_push",
-    "homeassistant": "2024.2.0",
+    "homeassistant": "2026.4.0",
     "blueprints": {
         "automation/lovi/knob_cob_control": "blueprints/automation/lovi/knob_cob_control.yaml"
     }

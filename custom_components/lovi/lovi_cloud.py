@@ -17,7 +17,6 @@ from .const import (
     CONF_ENDPOINT,
     CONF_LOCAL_KEY,
     CONF_TERMINAL_ID,
-    CONF_TOKEN_INFO,
     CONF_USER_CODE,
     DOMAIN,
     TUYA_CLIENT_ID,
@@ -276,7 +275,8 @@ class LoviCloud:
             try:
                 await self._hass.async_add_executor_job(self._manager.update_device_cache)
             except Exception as cache_err:
-                _LOGGER.warning("[LOVI_CLOUD] Device cache update during refresh: %s", cache_err)
+                _LOGGER.error("[LOVI_CLOUD] Device cache update during refresh failed: %s", cache_err)
+                return False
 
             # Check if the token listener received updated token info
             if self._token_listener and self._token_listener.last_token_info:
@@ -310,7 +310,14 @@ class LoviCloud:
             _LOGGER.info("[LOVI_CLOUD] Device cache updated, device count=%s", len(self._manager.device_map))
         except Exception as e:
             _LOGGER.error("[LOVI_CLOUD] Failed to update device cache: %s", e, exc_info=True)
-            return {}
+            _LOGGER.info("[LOVI_CLOUD] Attempting token refresh and retry")
+            await self.async_refresh_token()
+            try:
+                await self._hass.async_add_executor_job(self._manager.update_device_cache)
+                _LOGGER.info("[LOVI_CLOUD] Device cache updated on retry, device count=%s", len(self._manager.device_map))
+            except Exception as e2:
+                _LOGGER.error("[LOVI_CLOUD] Retry failed to update device cache: %s", e2, exc_info=True)
+                return None
 
         cloud_devices = {}
         domain_data = self._hass.data.get(DOMAIN, {})

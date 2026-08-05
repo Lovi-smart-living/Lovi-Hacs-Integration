@@ -11,15 +11,10 @@ CONF_DEVICE_CID = "device_cid"
 CONF_PROTOCOL_VERSION = "protocol_version"
 API_PROTOCOL_VERSIONS = [3.3, 3.1, 3.2, 3.4, 3.5, 3.22]
 
-CONF_APP_TYPE = "tuya_app_type"
 CONF_ENDPOINT = "endpoint"
 CONF_TERMINAL_ID = "terminal_id"
-CONF_TOKEN_INFO = "token_info"
 CONF_USER_CODE = "user_code"
-CONF_USERNAME = "username"
 
-CONF_CLOUD_CREDENTIALS = "cloud_credentials"
-CONF_AUTO_RECONNECT = "auto_reconnect"
 CONF_HEALTH_MONITOR_ENABLED = "health_monitor_enabled"
 CONF_HEALTH_CHECK_INTERVAL = "health_check_interval"
 

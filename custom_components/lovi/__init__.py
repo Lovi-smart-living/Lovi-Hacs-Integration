@@ -8,10 +8,13 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from .const import (
     CONF_DEVICE_CID,
     CONF_DEVICE_ID,
+    CONF_HEALTH_CHECK_INTERVAL,
+    CONF_HEALTH_MONITOR_ENABLED,
     CONF_LOCAL_KEY,
     CONF_POLL_ONLY,
     CONF_PROTOCOL_VERSION,
     CONF_TYPE,
+    DEFAULT_HEALTH_CHECK_INTERVAL,
     DOMAIN,
 )
 from .coordinator import LoviCoordinator
@@ -33,9 +36,6 @@ async def async_migrate_entry(hass, entry: ConfigEntry):
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     device_id = get_device_config_id(entry.data)
     _LOGGER.debug("Setting up entry for device: %s", device_id)
-
-    if DOMAIN not in hass.data:
-        hass.data[DOMAIN] = {}
 
     if DOMAIN not in hass.data:
         hass.data[DOMAIN] = {}
@@ -93,6 +93,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.data[DOMAIN][entry.entry_id]["device"] = device
     hass.data[DOMAIN][entry.entry_id]["tuyadevice"] = device._api
     hass.data[DOMAIN][entry.entry_id]["tuyadevicelock"] = device._api_lock
+    hass.data[DOMAIN][entry.entry_id]["_last_config"] = dict(entry.data)
 
     entry.add_update_listener(async_update_entry)
 
@@ -159,5 +160,26 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
 
 async def async_update_entry(hass: HomeAssistant, entry: ConfigEntry):
     _LOGGER.debug("Updating entry for device: %s", get_device_config_id(entry.data))
-    await async_unload_entry(hass, entry)
-    await async_setup_entry(hass, entry)
+
+    entry_data = hass.data.get(DOMAIN, {}).get(entry.entry_id, {})
+    old = entry_data.get("_last_config", {})
+    new = dict(entry.data)
+    changed = {k for k in new if new.get(k) != old.get(k)}
+
+    if changed and changed == {CONF_HOST}:
+        _LOGGER.info("[INIT] Only host changed for %s, updating in place without reload", entry.title)
+        device = entry_data.get("device")
+        if device is not None:
+            await device.async_update_address(new.get(CONF_HOST, ""))
+        entry_data["_last_config"] = new
+    else:
+        await async_unload_entry(hass, entry)
+        await async_setup_entry(hass, entry)
+
+    coordinator = hass.data.get(DOMAIN, {}).get("coordinator")
+    if coordinator is not None:
+        enabled = bool(entry.options.get(CONF_HEALTH_MONITOR_ENABLED, True))
+        interval = int(
+            entry.options.get(CONF_HEALTH_CHECK_INTERVAL, DEFAULT_HEALTH_CHECK_INTERVAL)
+        )
+        await coordinator.async_update_health_settings(enabled, interval)
