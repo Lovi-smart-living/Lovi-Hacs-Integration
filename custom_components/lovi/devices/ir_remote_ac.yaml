@@ -1,0 +1,23 @@
+name: Air conditioner (IR remote)
+# Generic smart-IR blaster template for virtual air-conditioner sub-devices
+# that live inside an IR hub (e.g. Hoomemate-style hubs).
+# These sub-devices have no IP and rarely report local DPs; this config lets
+# them be selected manually so their IR buttons can be learned and sent.
+entities:
+  - entity: remote
+    dps:
+      - id: 201
+        name: send
+        type: string
+        optional: true
+      - id: 202
+        name: receive
+        type: string
+        optional: true
+        persist: false
+  - entity: infrared
+    dps:
+      - id: 201
+        name: send
+        type: string
+        optional: true
