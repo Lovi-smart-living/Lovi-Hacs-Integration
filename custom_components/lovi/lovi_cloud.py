@@ -14,6 +14,7 @@ from tuya_sharing import (
 
 from .const import (
     CONF_DEVICE_CID,
+    CONF_DEVICE_ID,
     CONF_ENDPOINT,
     CONF_LOCAL_KEY,
     CONF_TERMINAL_ID,
@@ -320,7 +321,7 @@ class LoviCloud:
                 return None
 
         cloud_devices = {}
-        domain_data = self._hass.data.get(DOMAIN, {})
+        configured_ids = _configured_device_ids(self._hass)
         for device in self._manager.device_map.values():
             try:
                 cloud_device = {
@@ -346,12 +347,7 @@ class LoviCloud:
                     ),
                 }
 
-                existing_id = domain_data.get(cloud_device["id"]) if domain_data else None
-                existing_uuid = (
-                    domain_data.get(cloud_device["uuid"]) if domain_data else None
-                )
-                existing = existing_id or existing_uuid
-                cloud_device["exists"] = existing and existing.get("device")
+                cloud_device["exists"] = _device_is_configured(cloud_device, configured_ids)
                 if hasattr(device, "node_id"):
                     index = "/".join([cloud_device["id"], cloud_device["node_id"]])
                 else:
@@ -452,6 +448,37 @@ class LoviCloud:
     @property
     def auth_data(self) -> CloudAuthData | None:
         return self._auth
+
+
+def _configured_device_ids(hass: HomeAssistant) -> set[str]:
+    """Return device and sub-device ids registered in Lovi config entries.
+
+    The registry is authoritative: a deleted config entry disappears from
+    ``async_entries()`` immediately, so a removed device is no longer
+    considered configured.
+    """
+    configured: set[str] = set()
+    for entry in hass.config_entries.async_entries(DOMAIN):
+        device_id = entry.data.get(CONF_DEVICE_ID)
+        if device_id:
+            configured.add(device_id)
+        device_cid = entry.data.get(CONF_DEVICE_CID)
+        if device_cid:
+            configured.add(device_cid)
+    return configured
+
+
+def _device_is_configured(
+    cloud_device: dict[str, Any], configured_ids: set[str]
+) -> bool:
+    """Return whether a cloud device matches any configured config entry."""
+    if cloud_device.get("id") in configured_ids:
+        return True
+    if cloud_device.get("uuid") and cloud_device["uuid"] in configured_ids:
+        return True
+    if cloud_device.get("node_id") and cloud_device["node_id"] in configured_ids:
+        return True
+    return False
 
 
 class DeviceListener(SharingDeviceListener):
