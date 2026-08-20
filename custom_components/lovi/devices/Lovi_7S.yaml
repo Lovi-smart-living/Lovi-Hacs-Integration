@@ -39,12 +39,7 @@ entities:
       - id: 6
         type: boolean
         name: switch
-  - entity: switch
-    name: Switch 8
-    dps:
-      - id: 102
-        type: boolean
-        name: switch
+
 
   - entity: switch
     name: All Switches
@@ -164,3 +159,70 @@ entities:
         range:
           min: 0
           max: 1200
+#-----COLOUR CHANGE
+  - entity: switch
+    name: Change color
+    category: config
+    dps:
+      - id: 109       
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: switch
+    name: "ON"
+    category: config
+    dps:
+      - id: 111
+        type: boolean
+        name: switch
+        optional: true
+  
+  - entity: switch
+    name: "OFF"
+    category: config
+    dps:
+      - id: 102
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: text
+    name: Color Hex Payload
+    category: config
+    dps:
+      - id: 103       
+        type: string
+        name: value
+        optional: true
+
+  - entity: number
+    name: Backlight Brightness
+    icon: mdi:brightness-percent
+    category: config
+    dps:
+      - id: 107
+        type: integer
+        name: value
+        unit: "%"
+        optional: true
+        range:
+          min: 0
+          max: 100
+
+  - entity: select
+    name: Touch Sensitivity
+    category: config
+    icon: mdi:gesture-tap
+    dps:
+      - id: 101
+        type: string
+        name: option
+        optional: true
+        mapping:
+          - dps_val: "Low"
+            value: "Prefered"
+          - dps_val: "Medium"
+            value: "Balanced"
+          - dps_val: "High"
+            value: "Air Touch"
