@@ -1,0 +1,166 @@
+name: Lovi 7 Switch module
+products:
+  - id: uegabopaeaq3wwvm
+
+entities:
+  - entity: switch
+    name: Switch 1
+    dps:
+      - id: 1
+        type: boolean
+        name: switch
+  - entity: switch
+    name: Switch 2
+    dps:
+      - id: 2
+        type: boolean
+        name: switch
+  - entity: switch
+    name: Switch 3
+    dps:
+      - id: 3
+        type: boolean
+        name: switch
+  - entity: switch
+    name: Switch 4
+    dps:
+      - id: 4
+        type: boolean
+        name: switch
+  - entity: switch
+    name: Switch 5
+    dps:
+      - id: 5
+        type: boolean
+        name: switch
+  - entity: switch
+    name: Switch 6
+    dps:
+      - id: 6
+        type: boolean
+        name: switch
+  - entity: switch
+    name: Switch 8
+    dps:
+      - id: 102
+        type: boolean
+        name: switch
+
+  - entity: switch
+    name: All Switches
+    category: config
+    icon: mdi:power
+    dps:
+      - id: 13
+        type: boolean
+        name: switch
+
+  - entity: select
+    name: Power On State
+    category: config
+    icon: mdi:power-settings
+    dps:
+      - id: 14
+        type: string
+        name: option
+        mapping:
+          - dps_val: "power_off"
+            value: "Power Off"
+          - dps_val: "power_on"
+            value: "Power On"
+          - dps_val: "last"
+            value: "Last State"
+
+  - entity: switch
+    name: Child Lock
+    category: config
+    icon: mdi:lock
+    dps:
+      - id: 104
+        type: boolean
+        name: switch
+
+  - entity: switch
+    name: Master Switch
+    category: config
+    icon: mdi:power-socket
+    dps:
+      - id: 108
+        type: boolean
+        name: switch
+
+  - entity: switch
+    name: Backlight
+    category: config
+    icon: mdi:lightbulb-on
+    dps:
+      - id: 16
+        type: boolean
+        name: switch
+
+  - entity: number
+    name: Countdown 1
+    category: config
+    dps:
+      - id: 7
+        type: integer
+        name: value
+        unit: s
+        range:
+          min: 0
+          max: 1200
+  - entity: number
+    name: Countdown 2
+    category: config
+    dps:
+      - id: 8
+        type: integer
+        name: value
+        unit: s
+        range:
+          min: 0
+          max: 1200
+  - entity: number
+    name: Countdown 3
+    category: config
+    dps:
+      - id: 9
+        type: integer
+        name: value
+        unit: s
+        range:
+          min: 0
+          max: 1200
+  - entity: number
+    name: Countdown 4
+    category: config
+    dps:
+      - id: 10
+        type: integer
+        name: value
+        unit: s
+        range:
+          min: 0
+          max: 1200
+  - entity: number
+    name: Countdown 5
+    category: config
+    dps:
+      - id: 11
+        type: integer
+        name: value
+        unit: s
+        range:
+          min: 0
+          max: 1200
+  - entity: number
+    name: Countdown 6
+    category: config
+    dps:
+      - id: 12
+        type: integer
+        name: value
+        unit: s
+        range:
+          min: 0
+          max: 1200
