@@ -39,6 +39,12 @@ entities:
       - id: 6
         type: boolean
         name: switch
+  - entity: switch
+    name: Switch 7
+    dps:
+      - id: 108
+        type: boolean
+        name: switch
 
 
   - entity: switch
