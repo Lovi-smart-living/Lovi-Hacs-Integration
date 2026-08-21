@@ -48,7 +48,7 @@ entities:
 
 
   - entity: switch
-    name: All Switches
+    name: Master Switch
     category: config
     icon: mdi:power
     dps:
@@ -65,11 +65,11 @@ entities:
         type: string
         name: option
         mapping:
-          - dps_val: "power_off"
+          - dps_val: "off"
             value: "Power Off"
           - dps_val: "power_on"
-            value: "Power On"
-          - dps_val: "last"
+            value: "on"
+          - dps_val: "memory"
             value: "Last State"
 
   - entity: switch
@@ -81,14 +81,6 @@ entities:
         type: boolean
         name: switch
 
-  - entity: switch
-    name: Master Switch
-    category: config
-    icon: mdi:power-socket
-    dps:
-      - id: 108
-        type: boolean
-        name: switch
 
   - entity: switch
     name: Backlight

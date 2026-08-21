@@ -1,0 +1,56 @@
+name: Lovi-Zeck 4 Switch Touch swtich Board
+products:
+  - id: 0ntk8bcf9oblcjdo
+
+entities:
+  - entity: switch
+    name: Switch 1
+    dps:
+      - id: 1
+        type: boolean
+        name: switch
+  - entity: switch
+    name: Switch 2
+    dps:
+      - id: 2
+        type: boolean
+        name: switch
+  - entity: switch
+    name: Switch 3
+    dps:
+      - id: 3
+        type: boolean
+        name: switch
+  - entity: switch
+    name: Switch 4
+    dps:
+      - id: 4
+        type: boolean
+        name: switch
+
+#------------------------------
+
+  - entity: switch
+    name: Master Switch
+    category: config
+    icon: mdi:power
+    dps:
+      - id: 13
+        type: boolean
+        name: switch
+
+  - entity: select
+    name: Power On State
+    category: config
+    icon: mdi:power-settings
+    dps:
+      - id: 14
+        type: string
+        name: option
+        mapping:
+          - dps_val: "power_off"
+            value: "Power Off"
+          - dps_val: "power_on"
+            value: "Power On"
+          - dps_val: "last"
+            value: "Last State"
