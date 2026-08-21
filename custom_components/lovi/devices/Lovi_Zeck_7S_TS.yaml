@@ -46,7 +46,6 @@ entities:
         type: boolean
         name: switch
 
-
   - entity: switch
     name: Master Switch
     category: config
@@ -80,7 +79,6 @@ entities:
       - id: 104
         type: boolean
         name: switch
-
 
   - entity: switch
     name: Backlight
@@ -157,12 +155,23 @@ entities:
         range:
           min: 0
           max: 1200
-#-----COLOUR CHANGE
+  - entity: number
+    name: Countdown 7
+    category: config
+    dps:
+      - id: 110
+        type: integer
+        name: value
+        unit: s
+        range:
+          min: 0
+          max: 1200
+  #-----COLOUR CHANGE
   - entity: switch
     name: Change color
     category: config
     dps:
-      - id: 109       
+      - id: 109
         type: boolean
         name: switch
         optional: true
@@ -175,7 +184,7 @@ entities:
         type: boolean
         name: switch
         optional: true
-  
+
   - entity: switch
     name: "OFF"
     category: config
@@ -189,7 +198,7 @@ entities:
     name: Color Hex Payload
     category: config
     dps:
-      - id: 103       
+      - id: 103
         type: string
         name: value
         optional: true

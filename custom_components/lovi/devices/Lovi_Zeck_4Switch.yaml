@@ -28,8 +28,8 @@ entities:
         type: boolean
         name: switch
 
-#------------------------------
-
+  #------------------------------
+  #Master Switch and Configurations
   - entity: switch
     name: Master Switch
     category: config
@@ -38,7 +38,7 @@ entities:
       - id: 13
         type: boolean
         name: switch
-
+  #restart status of the switches
   - entity: select
     name: Power On State
     category: config
@@ -54,3 +54,135 @@ entities:
             value: "Power On"
           - dps_val: "last"
             value: "Last State"
+  #child lock
+  - entity: switch
+    name: Child Lock
+    category: config
+    icon: mdi:lock
+    dps:
+      - id: 104
+        type: boolean
+        name: switch
+  #backlight
+  - entity: switch
+    name: Backlight
+    category: config
+    icon: mdi:lightbulb-on
+    dps:
+      - id: 16
+        type: boolean
+        name: switch
+  #backlight brightness
+  - entity: number
+    name: Backlight Brightness
+    category: config
+    icon: mdi:brightness-5
+    dps:
+      - id: 107
+        type: integer
+        name: value
+        optional: true
+        range:
+          min: 0
+          max: 100
+  #countdown timers
+
+  - entity: number
+    name: Countdown 1
+    category: config
+    dps:
+      - id: 7
+        type: integer
+        name: value
+        unit: s
+        range:
+          min: 0
+          max: 1200
+  - entity: number
+    name: Countdown 3
+    category: config
+    dps:
+      - id: 8
+        type: integer
+        name: value
+        unit: s
+        range:
+          min: 0
+          max: 1200
+  - entity: number
+    name: Countdown 3
+    category: config
+    dps:
+      - id: 9
+        type: integer
+        name: value
+        unit: s
+        range:
+          min: 0
+          max: 1200
+  - entity: number
+    name: Countdown 4
+    category: config
+    dps:
+      - id: 10
+        type: integer
+        name: value
+        unit: s
+        range:
+          min: 0
+          max: 1200
+
+#Touch sensitivity
+  - entity: select
+    name: Touch Sensitivity
+    category: config
+    icon: mdi:gesture-tap
+    dps:
+      - id: 101
+        type: string
+        name: option
+        optional: true
+        mapping:
+          - dps_val: "Low"
+            value: "Prefered"
+          - dps_val: "Medium"
+            value: "Balanced"
+          - dps_val: "High"
+            value: "Air Touch"
+
+#Change color
+  - entity: switch
+    name: Change color
+    category: config
+    dps:
+      - id: 109
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: switch
+    name: "ON"
+    category: config
+    dps:
+      - id: 115
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: switch
+    name: "OFF"
+    category: config
+    dps:
+      - id: 111
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: text
+    name: Color Hex Payload
+    category: config
+    dps:
+      - id: 113
+        type: string
+        name: value
+        optional: true
