@@ -735,10 +735,9 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             },
         )
 
-    @staticmethod
-    @callback
-    def async_get_options_flow(config_entry: ConfigEntry):
-        return OptionsFlowHandler()
+@staticmethod
+def async_get_options_flow(config_entry: ConfigEntry):
+    return OptionsFlowHandler()
 
 
 class OptionsFlowHandler(OptionsFlow):
