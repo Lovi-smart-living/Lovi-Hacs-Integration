@@ -1,0 +1,250 @@
+name: Lovi - Zeck 7 switches 1 curtain Touch Pannel 
+products:
+  - id: keyfxuj3d5wg53wx
+
+entities:
+  # --- THE CURTAIN ---
+  - entity: cover
+    name: Curtain
+    class: curtain
+    dps:
+      - id: 103
+        type: string
+        name: control
+        optional: true
+        mapping:
+          - dps_val: "open"
+            value: open
+          - dps_val: "close"
+            value: close
+          - dps_val: "stop"
+            value: stop
+
+  # --- THE 7 RELAY SWITCHES & MASTER ---
+  - entity: switch
+    name: Switch 1
+    dps:
+      - id: 1
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: switch
+    name: Switch 2
+    dps:
+      - id: 2
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: switch
+    name: Switch 3
+    dps:
+      - id: 3
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: switch
+    name: Switch 4
+    dps:
+      - id: 4
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: switch
+    name: Switch 5
+    dps:
+      - id: 5
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: switch
+    name: Switch 6
+    dps:
+      - id: 6
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: switch
+    name: Switch 7
+    dps:
+      - id: 108
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: switch
+    name: Master Switch
+    dps:
+      - id: 13
+        type: boolean
+        name: switch
+        optional: true
+
+  # --- THE 6 COUNTDOWN TIMERS ---
+  - entity: number
+    name: Timer Switch 1
+    category: config
+    icon: mdi:timer-outline
+    dps:
+      - id: 7
+        type: integer
+        name: value
+        unit: s
+        optional: true
+        range:
+          min: 0
+          max: 86400
+
+  - entity: number
+    name: Timer Switch 2
+    category: config
+    icon: mdi:timer-outline
+    dps:
+      - id: 8
+        type: integer
+        name: value
+        unit: s
+        optional: true
+        range:
+          min: 0
+          max: 86400
+
+  - entity: number
+    name: Timer Switch 3
+    category: config
+    icon: mdi:timer-outline
+    dps:
+      - id: 9
+        type: integer
+        name: value
+        unit: s
+        optional: true
+        range:
+          min: 0
+          max: 86400
+
+  - entity: number
+    name: Timer Switch 4
+    category: config
+    icon: mdi:timer-outline
+    dps:
+      - id: 10
+        type: integer
+        name: value
+        unit: s
+        optional: true
+        range:
+          min: 0
+          max: 86400
+
+  - entity: number
+    name: Timer Switch 5
+    category: config
+    icon: mdi:timer-outline
+    dps:
+      - id: 11
+        type: integer
+        name: value
+        unit: s
+        optional: true
+        range:
+          min: 0
+          max: 86400
+
+  - entity: number
+    name: Timer Switch 6
+    category: config
+    icon: mdi:timer-outline
+    dps:
+      - id: 12
+        type: integer
+        name: value
+        unit: s
+        optional: true
+        range:
+          min: 0
+          max: 86400
+
+  # --- DEVICE CONFIGURATIONS ---
+  - entity: switch
+    name: Child Lock
+    category: config
+    icon: mdi:lock
+    dps:
+      - id: 104
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: select
+    name: Touch Sensitivity
+    category: config
+    icon: mdi:gesture-tap
+    dps:
+      - id: 101
+        type: string
+        name: option
+        optional: true
+        mapping:
+          - dps_val: "Low"
+            value: "Prefered"
+          - dps_val: "Medium"
+            value: "Balanced"
+          - dps_val: "High"
+            value: "Air Touch"
+
+  # --- DIRECT COLOR SYSTEM FOR EXPO API ---
+  - entity: switch
+    name: "ON"
+    category: config
+    dps:
+      - id: 114
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: switch
+    name: "OFF"
+    category: config
+    dps:
+      - id: 109
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: switch
+    name: Change color
+    category: config
+    dps:
+      - id: 113
+        type: boolean
+        name: switch
+        optional: true
+
+  - entity: text
+    name: Color Hex Payload
+    category: config
+    dps:
+      - id: 111
+        type: string
+        name: value
+        optional: true
+
+  - entity: number
+    name: Backlight Brightness
+    icon: mdi:brightness-percent
+    category: config
+    dps:
+      - id: 107
+        type: integer
+        name: value
+        unit: "%"
+        optional: true
+        range:
+          min: 0
+          max: 100
